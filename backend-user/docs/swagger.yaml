@@ -1,0 +1,409 @@
+basePath: /
+definitions:
+  auth.LoginDTO:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  auth.LoginResponseDTO:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/auth.User'
+    type: object
+  auth.ResetPasswordDTO:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  auth.ResetPasswordResponseDTO:
+    properties:
+      message:
+        type: string
+    type: object
+  auth.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      status:
+        type: string
+    type: object
+  shared.UserStatus:
+    enum:
+    - active
+    - inactive
+    type: string
+    x-enum-varnames:
+    - StatusActive
+    - StatusInactive
+  user.CreateUserDTO:
+    properties:
+      email:
+        type: string
+      name:
+        minLength: 3
+        type: string
+      password:
+        minLength: 6
+        type: string
+      status:
+        allOf:
+        - $ref: '#/definitions/shared.UserStatus'
+        enum:
+        - active
+        - inactive
+    required:
+    - email
+    - name
+    - password
+    type: object
+  user.ResetPasswordDTO:
+    properties:
+      password:
+        minLength: 6
+        type: string
+    required:
+    - password
+    type: object
+  user.UpdateUserDTO:
+    properties:
+      email:
+        type: string
+      name:
+        minLength: 3
+        type: string
+      password:
+        minLength: 6
+        type: string
+      status:
+        allOf:
+        - $ref: '#/definitions/shared.UserStatus'
+        enum:
+        - active
+        - inactive
+    type: object
+  user.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      status:
+        $ref: '#/definitions/shared.UserStatus'
+      updated_at:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API REST em Go com Gin, GORM e Swagger
+  title: API Usuário
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Credenciais de login
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.LoginResponseDTO'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Faz login do usuário
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Faz logout do usuário
+      tags:
+      - auth
+  /auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Email do usuário
+        in: body
+        name: email
+        required: true
+        schema:
+          $ref: '#/definitions/auth.ResetPasswordDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.ResetPasswordResponseDTO'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Redefine a senha do usuário para "123"
+      tags:
+      - auth
+  /auth/validate:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Valida se o token JWT é válido
+      tags:
+      - auth
+  /users/:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/user.User'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Lista todos os usuários
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados do usuário
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/user.CreateUserDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/user.User'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Cria um usuário
+      tags:
+      - users
+  /users/{id}:
+    get:
+      parameters:
+      - description: ID do usuário
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.User'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Busca um usuário específico
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID do usuário
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Dados do usuário
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/user.UpdateUserDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.User'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Atualiza um usuário
+      tags:
+      - users
+  /users/{id}/reset-password:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID do usuário
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Nova senha
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/user.ResetPasswordDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Redefine a senha de um usuário
+      tags:
+      - users
+securityDefinitions:
+  BearerAuth:
+    description: Digite "Bearer" seguido de um espaço e o token JWT
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
