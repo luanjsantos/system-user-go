@@ -42,6 +42,42 @@ definitions:
       status:
         type: string
     type: object
+  profile.ProfileResponseDTO:
+    properties:
+      address:
+        type: string
+      avatar_url:
+        type: string
+      bio:
+        type: string
+      birth_date:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      phone:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  profile.UpdateProfileDTO:
+    properties:
+      address:
+        type: string
+      bio:
+        type: string
+      birth_date:
+        type: string
+      phone:
+        type: string
+    type: object
   shared.UserStatus:
     enum:
     - active
@@ -231,6 +267,74 @@ paths:
       summary: Valida se o token JWT é válido
       tags:
       - auth
+  /profile:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/profile.ProfileResponseDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Obtém o perfil do usuário logado
+      tags:
+      - profile
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados do perfil
+        in: body
+        name: profile
+        required: true
+        schema:
+          $ref: '#/definitions/profile.UpdateProfileDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/profile.ProfileResponseDTO'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Atualiza o perfil do usuário logado
+      tags:
+      - profile
   /users/:
     get:
       produces:
