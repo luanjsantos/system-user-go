@@ -7,6 +7,7 @@ import (
 	"github.com/luanjsantos/backend-user/config"
 	_ "github.com/luanjsantos/backend-user/docs"
 	"github.com/luanjsantos/backend-user/internal/auth"
+	"github.com/luanjsantos/backend-user/internal/profile"
 	"github.com/luanjsantos/backend-user/internal/user"
 	"github.com/luanjsantos/backend-user/middleware"
 	"github.com/luanjsantos/backend-user/utils"
@@ -51,6 +52,11 @@ func main() {
 	authService := auth.NewService(userService, secretKey)
 	authHandler := auth.NewHandler(authService)
 
+	// Profile services
+	profileRepo := profile.NewRepository(db)
+	profileService := profile.NewService(userService, profileRepo)
+	profileHandler := profile.NewHandler(profileService)
+
 	r := gin.New() // Usar gin.New() em vez de gin.Default() para mais controle
 
 	// Middlewares globais
@@ -67,6 +73,7 @@ func main() {
 	protected := r.Group("/")
 	protected.Use(middleware.AuthMiddleware(authService))
 	user.RegisterRoutes(protected, userHandler)
+	profile.RegisterRoutes(protected, profileHandler)
 
 	utils.LogInfo("Servidor iniciado com sucesso", map[string]interface{}{
 		"port": "8080",
